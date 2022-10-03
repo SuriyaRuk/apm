@@ -1,0 +1,32 @@
+version: "3"
+services:
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:7.9.2
+    expose:
+      - 8200
+    command: >
+      apm-server -e
+          -E apm-server.rum.enabled=true
+          -E setup.kibana.host=kibana:5601
+          -E setup.template.settings.index.number_of_replicas=0
+          -E apm-server.kibana.enabled=true
+          -E apm-server.kibana.host=kibana:5601
+          -E output.elasticsearch.hosts=["elasticsearch:9200"]
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=apm
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+    expose:
+      - 9200
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.9.2
+    environment:
+      - SERVER_NAME=kibana
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=5601
+    ports:
+      - "5601:5601"
